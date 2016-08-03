@@ -81,8 +81,10 @@ public class GUI extends JFrame {
 		File configs = new File("judger.cfg");
 		try {
 			Scanner sc = new Scanner(configs);
-			setTestDir(sc.nextLine());
-			setConDir(sc.nextLine());
+			if (sc.hasNextLine())
+				setTestDir(sc.nextLine());
+			if (sc.hasNextLine())
+				setConDir(sc.nextLine());
 			sc.close();
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
@@ -116,7 +118,10 @@ public class GUI extends JFrame {
 	public void initScrTab() {
 
 		tblScr.setModel(tmScr);
-		tmScr.setDataVector(db.loadContestants(new File(conDir)), db.loadTest(new File(testDir)));
+		if (conDir != null)
+			tmScr.setDataVector(db.loadContestants(new File(conDir)), db.loadTest(new File(testDir)));
+		else
+			tmScr.setDataVector(null, new Object[] { "Contestants" });
 
 		scrTable.setViewportView(tblScr);
 		add(lblScrTab, BorderLayout.NORTH);
