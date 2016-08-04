@@ -3,6 +3,7 @@ package bangjdev.judger.main;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
@@ -17,6 +18,7 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.KeyStroke;
 import javax.swing.table.DefaultTableModel;
 
 public class GUI extends JFrame {
@@ -24,17 +26,17 @@ public class GUI extends JFrame {
 	private static final long serialVersionUID = 9053221221290669191L;
 
 	private static JMenuBar mainBar = new JMenuBar();
-	private static JMenu mnFile = new JMenu("File");
-	private static JMenuItem mniLoadTask = new JMenuItem("Update tests");
-	private static JMenuItem mniLoadContestant = new JMenuItem("Update contestants");
-	private static JMenuItem mniQuit = new JMenuItem("Quit");
-	private static JMenu mnHelp = new JMenu("Help");
-	private static JMenuItem mniAbout = new JMenuItem("About");
-	private static JMenuItem mniHelp = new JMenuItem("How to use");
+		private static JMenu mnFile = new JMenu("Contest");
+			private static JMenuItem mniLoadTask = new JMenuItem("Tasks");
+			private static JMenuItem mniLoadContestant = new JMenuItem("Contestants");
+			private static JMenuItem mniQuit = new JMenuItem("Exit");
+		private static JMenu mnHelp = new JMenu("Help");
+			private static JMenuItem mniAbout = new JMenuItem("About");
+			private static JMenuItem mniHelp = new JMenuItem("How to use");
 	private static JLabel lblScrTab = new JLabel("Score");
 	private static JScrollPane scrTable = new JScrollPane();
-	private static JTable tblScr = new JTable();
-	private static DefaultTableModel tmScr = new DefaultTableModel();
+		private static JTable tblScr = new JTable();
+			private static DefaultTableModel tmScr = new DefaultTableModel();
 	private static DbUpdate db = new DbUpdate();
 
 	private static String testDir = null, conDir = null;
@@ -66,8 +68,12 @@ public class GUI extends JFrame {
 	public void updateConfig() {
 		try {
 			PrintWriter pw = new PrintWriter(new File("judger.cfg"));
-			pw.println(testDir);
-			pw.println(conDir);
+			if (testDir!=null)
+				pw.println(testDir);
+			else
+				pw.println();
+			if (conDir!=null)
+				pw.println(conDir);
 			pw.flush();
 			pw.close();
 		} catch (NullPointerException e) {
@@ -85,6 +91,14 @@ public class GUI extends JFrame {
 				setTestDir(sc.nextLine());
 			if (sc.hasNextLine())
 				setConDir(sc.nextLine());
+			if (testDir!=null)
+				if (testDir.equals(""))
+					testDir = null;
+			if (conDir != null)
+				if (conDir.equals(""))
+					conDir = null;
+			System.out.println(testDir + "\n" + conDir);
+			
 			sc.close();
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
@@ -103,6 +117,11 @@ public class GUI extends JFrame {
 	}
 
 	public void initMenu() {
+		
+		mniLoadContestant.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F1, 0));
+		mniLoadTask.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F2, 0));
+		
+		
 		mnFile.add(mniLoadContestant);
 		mnFile.add(mniLoadTask);
 		mnFile.add(mniQuit);
@@ -115,13 +134,24 @@ public class GUI extends JFrame {
 
 	}
 
+	@SuppressWarnings("rawtypes")
 	public void initScrTab() {
 
 		tblScr.setModel(tmScr);
+		tblScr.setFocusable(false);
+		Vector<Vector> data = new Vector<Vector>();
+		Vector<String> cols = new Vector<String>();
 		if (conDir != null)
-			tmScr.setDataVector(db.loadContestants(new File(conDir)), db.loadTest(new File(testDir)));
+			data = db.loadContestants(new File(conDir));
+		if (testDir != null)
+			cols = db.loadTest(new File(testDir));
 		else
-			tmScr.setDataVector(null, new Object[] { "Contestants" });
+			cols.add("Contestants");
+		tmScr.setDataVector(data, cols);
+//		if (conDir != null && testDir!=null)
+//			tmScr.setDataVector(db.loadContestants(new File(conDir)), db.loadTest(new File(testDir)));
+//		else
+//			tmScr.setDataVector(null, new Object[] { "Contestants" });
 
 		scrTable.setViewportView(tblScr);
 		add(lblScrTab, BorderLayout.NORTH);
